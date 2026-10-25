@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Analisa Meme Coin Real-Time</title>
+<style>
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#0b1220;color:#e6edf3;line-height:1.5}
+a{color:#58a6ff} header{padding:18px 16px;background:#111827;border-bottom:1px solid #263043}
+header h1{margin:0;font-size:22px} header p{margin:4px 0 0;color:#9fb0c3;font-size:13px}
+.warn{margin:14px 16px;padding:12px;border:1px solid #f59e0b;background:#2a1f05;border-radius:10px;font-size:13px}
+.warn b{color:#fbbf24}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px 40px}
+.card{background:#111827;border:1px solid #263043;border-radius:12px;padding:16px;margin:14px 0}
+h2{font-size:18px;margin:0 0 10px} h3{font-size:15px;margin:14px 0 6px}
+input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#e6edf3;margin:4px 0}
+button{padding:10px 14px;border-radius:8px;border:0;background:#2563eb;color:#fff;cursor:pointer;font-weight:600;margin:4px 4px 4px 0}
+button.ghost{background:#1f2937} button.green{background:#15803d} button:disabled{opacity:.5}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.metric{background:#0b1220;border:1px solid #263043;border-radius:10px;padding:10px}
+.metric small{color:#9fb0c3;display:block} .metric b{font-size:18px}
+.pos{color:#4ade80}.neg{color:#f87171}.muted{color:#9fb0c3;font-size:13px}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;margin:2px}
+.pill.ok{background:#14532d}.pill.warn2{background:#713f12}.pill.bad{background:#7f1d1d}.pill.info{background:#1e3a8a}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}
+.tabs button{background:#1f2937} .tabs button.active{background:#2563eb}
+table{width:100%;border-collapse:collapse;font-size:13px} td,th{border-bottom:1px solid #263043;padding:7px 6px;text-align:left;vertical-align:top}
+.token-card{border:1px solid #263043;border-radius:10px;padding:12px;margin:8px 0;cursor:pointer;background:#0f172a}
+.token-card:hover{border-color:#2563eb}
+.flex{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.check{padding:6px 0;border-bottom:1px solid #1f2937;font-size:14px}
+.check input{width:auto}
+footer{color:#9fb0c3;font-size:12px;padding:20px 16px;text-align:center}
+@media(max-width:600px){header h1{font-size:19px}}
+</style>
+</head>
+<body>
+<header><h1>Analisa Meme Coin Real-Time</h1><p>Harga, likuiditas, keamanan kontrak, holder, skor 5 pilar, Rule 1–8, pantauan pasar, dan saran migrasi &amp; arus whale — data live dari DexScreener, GoPlus, dan CoinGecko.</p></header>
+<div class="warn"><b>PERINGATAN — BACA DULU:</b> Meme coin sangat spekulatif, harga bisa turun <b>50% atau lebih</b> bahkan saat pasar sedang naik. Gunakan hanya dana yang siap hilang 100%. Ini <b>alat analisa, bukan saran beli</b>. Jangan pakai leverage. Tetapkan entry, target, dan exit sebelum membeli.</div>
+<div class="wrap">
+
+<div class="card"><h2>Cari Token</h2>
+<p class="muted">Tempel alamat kontrak resmi (bukan nama koin — kontrak palsu sangat umum) atau ketik nama token. Chain terdeteksi otomatis: Solana, Ethereum, BSC, Base, Arbitrum, Polygon, Avalanche, Optimism.</p>
+<div class="flex"><input id="q" placeholder="Contoh: AUHK6bsTMU6nemt7epnvELJtGezx9JS76Lm48pxipump  atau  PEPE" style="flex:1;min-width:220px"><button id="btnSearch">Analisa</button></div>
+<p class="muted">Contoh cepat:
+<button class="ghost" data-q="AUHK6bsTMU6nemt7epnvELJtGezx9JS76Lm48pxipump">KURUMI (Solana)</button>
+<button class="ghost" data-q="0x6982508145454Ce325dDbE47a25d4ec3d2311933">PEPE (Ethereum)</button>
+<button class="ghost" data-q="0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82">BONK (Solana)</button>
+</p>
+<div id="searchStatus" class="muted"></div>
+<div id="searchResults"></div>
+</div>
+
+<div class="card" id="detailCard" style="display:none">
+<h2 id="tokenTitle">Detail Token</h2>
+<div id="tokenMeta" class="muted"></div>
+<div class="grid" id="tokenMetrics"></div>
+<div id="verdict"></div>
+<h3>Keamanan Kontrak (GoPlus)</h3><div id="security">Belum ada data keamanan. Klik Analisa untuk memuat.</div>
+<p class="muted">Untuk Solana: tampilkan mint/freeze authority dan jumlah holder bila tersedia. Untuk EVM: cek juga di Etherscan / BscScan lewat tautan di bawah.</p>
+<h3>Top-10 Holder</h3><div id="holders"></div>
+<h3>Skor 5 Pilar</h3><div id="scores"></div>
+<h3>Momentum (proksi, BUKAN RSI/MACD asli)</h3><div id="momentum"></div>
+<h3>Evaluasi Rule 1–8</h3><div id="rules"></div>
+<h3>Checklist 12 Poin</h3><div id="checklist"></div>
+<div id="tokenLinks"></div>
+</div>
+
+<div class="card"><h2>Rencana Entry &amp; Exit (Rule 6–8)</h2>
+<p class="muted">Tulis rencana sebelum membeli. Simpan ke watchlist dengan harga live saat disimpan.</p>
+<label>Token / kontrak <input id="planToken" placeholder="Nama atau alamat kontrak"></label>
+<label>Alasan masuk <textarea id="planWhy" rows="2"></textarea></label>
+<div class="grid">
+<div><label>Ukuran posisi (mis. Rp 500.000 / 1% portofolio) <input id="planSize"></label></div>
+<div><label>Harga entry <input id="planEntry" placeholder="0.000..."></label></div>
+<div><label>Stop-loss <input id="planSL" placeholder="mis. -30% dari entry"></label></div>
+</div>
+<div class="grid">
+<div><label>Target 1 (+50%) <input id="planTP1"></label></div>
+<div><label>Target 2 (+100%) <input id="planTP2"></label></div>
+<div><label>Skenario jika turun 30–50% <input id="planDown" placeholder="mis. keluar penuh / tahan"></label></div>
+</div>
+<button id="btnPlan">Simpan ke Watchlist</button>
+<span class="muted" id="planStatus"></span>
+</div>
+
+<div class="card"><h2>Watchlist &amp; Pantauan Pasar</h2>
+<p class="muted">Pantauan berjalan di halaman ini dan diperbarui otomatis tiap 60 detik. Perubahan berarti dicatat di bawah. Tampilan ini dibuat seperti catatan pasar biasa, tanpa label AI/agen/bot.</p>
+<div class="flex"><button id="btnRefreshMonitor">Perbarui sekarang</button><span id="monitorTime" class="muted">Belum ada pantauan.</span></div>
+<h3>Catatan terakhir</h3><div id="monitorNote" class="muted">Belum ada catatan. Tambah token ke watchlist, lalu tekan Perbarui sekarang.</div>
+<h3>Token terpantau</h3><div id="watchlist"></div>
+<h3>Perubahan Terakhir</h3><div id="monitorChanges" class="muted">Belum ada perubahan tercatat.</div>
+</div>
+
+<div class="card"><h2>Saran Migrasi &amp; Arus Whale</h2>
+<p class="muted">Token Solana pump.fun yang sedang ramai. <b>Menjelang migrasi</b> = masih di bonding curve (pair pumpfun). <b>Baru migrasi</b> = sudah pindah ke PumpSwap, umur pair maks. 14 hari. Peringkat dari dominasi beli 1 jam, rata-rata nilai transaksi 1 jam, volume, dan skor hype.</p>
+<p class="muted"><b>Jujur soal sinyal whale:</b> sinyal ini adalah <b>proksi dari data perdagangan DEX</b> (ukuran transaksi dan dominasi beli), <b>bukan pelacakan wallet tertentu</b>. Fase migrasi sangat berisiko — harga bisa naik lalu turun tajam dalam hitungan menit.</p>
+<div class="flex"><button id="btnMigration">Perbarui saran migrasi</button><span id="migrationStatus" class="muted"></span></div>
+<h3>Menjelang migrasi</h3><div id="migSoon"></div>
+<h3>Baru migrasi</h3><div id="migNew"></div>
+</div>
+
+<div class="card"><h2>Sedang Ramai (Trending)</h2>
+<p class="muted">Diperbarui otomatis tiap 60 detik. Sumber: DEX Screener boosts dan CoinGecko.</p>
+<div id="trending"></div>
+</div>
+
+<div class="card"><h2>Sumber Data</h2>
+<ul>
+<li>DexScreener — harga, market cap, likuiditas, volume, pair: <a href="https://dexscreener.com/" target="_blank" rel="noopener">dexscreener.com</a></li>
+<li>GoPlus Security — keamanan kontrak: <a href="https://gopluslabs.io/" target="_blank" rel="noopener">gopluslabs.io</a></li>
+<li>CoinGecko — trending: <a href="https://www.coingecko.com/" target="_blank" rel="noopener">coingecko.com</a></li>
+<li>Explorer: Solscan, Etherscan, BscScan — tautan per token ada di halaman detail.</li>
+</ul>
+<p class="muted">Semua fetch langsung dari browser ke API publik, tanpa API key. Jika API gagal atau rate limit, aplikasi menampilkan pesan ramah dan data terakhir yang tersimpan di localStorage tetap bisa dibaca.</p>
+</div>
+</div>
+<footer>Analisa Meme Coin Real-Time — data live DexScreener / GoPlus / CoinGecko. Data tersimpan di localStorage browser (meme-coin-analyzer-v1). Bukan saran investasi.</footer>
+<script>
+const LS='meme-coin-analyzer-v1';
+let state={watchlist:[],changes:[],note:'',lastMonitor:null,current:null};
+try{const s=JSON.parse(localStorage.getItem(LS)||'null'); if(s) state=Object.assign(state,s);}catch(e){}
+function save(){try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}}
+function fmt(n){if(n==null||isNaN(n))return '-'; if(Math.abs(n)>=1e9)return '$'+(n/1e9).toFixed(2)+' Mlr'; if(Math.abs(n)>=1e6)return '$'+(n/1e6).toFixed(2+'')+' jt'; if(Math.abs(n)>=1)return '$'+Number(n).toLocaleString('en-US',{maximumFractionDigits:4}); return '$'+Number(n).toFixed(8);}
+function fmtNum(n){if(n==null||isNaN(n))return '-'; return Number(n).toLocaleString('en-US');}
+function pct(n){if(n==null||isNaN(n))return '-'; return (n>0?'+':'')+Number(n).toFixed(2)+'%';}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+async function getJSON(url){const r=await fetch(url); if(!r.ok) throw new Error('HTTP '+r.status); return r.json();}
+function chainOf(addr){if(/^0x[a-fA-F0-9]{40}$/.test(addr))return 'ethereum'; return 'solana';}
+function explorer(chain,addr){const m={solana:'https://solscan.io/token/'+addr,ethereum:'https://etherscan.io/token/'+addr,bsc:'https://bscscan.com/token/'+addr,base:'https://basescan.org/token/'+addr}; return m[chain]||('https://dexscreener.com/search?q='+encodeURIComponent(addr));}
+async function fetchPairByToken(addr){
+  const d=await getJSON('https://api.dexscreener.com/latest/dex/tokens/'+encodeURIComponent(addr));
+  if(!d.pairs||!d.pairs.length) throw new Error('Token tidak ditemukan di DexScreener');
+  d.pairs.sort((a,b)=>(b.liquidity?.usd||0)-(a.liquidity?.usd||0)); return d.pairs[0];
+}
+async function fetchGoPlus(chain,addr){
+  try{
+    if(chain==='solana'){
+      const d=await getJSON('https://api.gopluslabs.io/api/v1/solana/token_security?contract_addresses='+encodeURIComponent(addr));
+      return d.result?Object.values(d.result)[0]:null;
+    }
+    const id={ethereum:1,bsc:56,base:8453,arbitrum:42161,polygon:137,avalanche:43114,optimism:10}[chain]||1;
+    const d=await getJSON('https://api.gopluslabs.io/api/v1/token_security/'+id+'?contract_addresses='+encodeURIComponent(addr));
+    return d.result?Object.values(d.result)[0]:null;
+  }catch(e){return null;}
+}
+function scorePair(p,sec){
+  const liq=p.liquidity?.usd||0, vol=p.volume?.h24||0, mc=p.marketCap||p.fdv||0;
+  const s={kontrak:70,likuiditas:50,distribusi:50,volume:50,pasar:50};
+  if(sec){
+    if(sec.is_honeypot==='1') s.kontrak=0; else if(sec.is_honeypot==='0') s.kontrak=85;
+    if(sec.is_mintable==='1'||sec.is_proxy==='1') s.kontrak=Math.min(s.kontrak,30);
+    if(sec.is_blacklisted==='1'||sec.can_take_back_ownership==='1') s.kontrak=Math.min(s.kontrak,20);
+    if(sec.is_open_source==='1') s.kontrak=Math.min(100,s.kontrak+10);
+    if(sec.mint_authority==='1'||sec.freeze_authority==='1') s.kontrak=Math.min(s.kontrak,30);
+  }
+  if(liq>=500000) s.likuiditas=90; else if(liq>=100000) s.likuiditas=75; else if(liq>=20000) s.likuiditas=55; else s.likuiditas=25;
+  if(mc&&vol/mc>3) s.volume=35; else if(vol>mc*0.5) s.volume=70; else if(vol>0) s.volume=80; else s.volume=30;
+  if(p.priceChange?.h24!=null){const c=p.priceChange.h24; s.pasar=c>0?Math.min(90,60+c):Math.max(20,60+c);}
+  const total=Math.round((s.kontrak+s.likuiditas+s.distribusi+s.volume+s.pasar)/5);
+  return {pillars:s,total};
+}
+function verdictFor(total,sec,p){
+  const hardFail = sec && (sec.is_honeypot==='1'||sec.is_mintable==='1'||sec.is_blacklisted==='1');
+  if(hardFail) return {label:'JANGAN BELI — Rule 1 gagal',cls:'bad'};
+  if(total>=75) return {label:'Layak dipantau — skor tinggi, tetap pakai rencana exit',cls:'ok'};
+  if(total>=55) return {label:'Hati-hati — skor menengah, posisi kecil saja',cls:'warn2'};
+  return {label:'Berisiko tinggi — hindari / tunggu konfirmasi',cls:'bad'};
+}
+function renderDetail(p,sec){
+  state.current=p; save();
+  const card=document.getElementById('detailCard'); card.style.display='block';
+  const price=parseFloat(p.priceUsd||0);
+  document.getElementById('tokenTitle').textContent=(p.baseToken?.name||'Token')+' ('+(p.baseToken?.symbol||'')+')';
+  document.getElementById('tokenMeta').textContent=(p.chainId||'')+' · '+esc(p.dexId||'')+' · Pair '+esc(p.pairAddress||'')+' · Kontrak '+esc(p.baseToken?.address||'');
+  const ch=p.priceChange||{};
+  document.getElementById('tokenMetrics').innerHTML=
+    '<div class="metric"><small>Harga</small><b>'+fmt(price)+'</b></div>'+
+    '<div class="metric"><small>Market Cap</small><b>'+fmt(p.marketCap||p.fdv)+'</b></div>'+
+    '<div class="metric"><small>FDV</small><b>'+fmt(p.fdv)+'</b></div>'+
+    '<div class="metric"><small>Likuiditas</small><b>'+fmt(p.liquidity?.usd)+'</b></div>'+
+    '<div class="metric"><small>Volume 24j</small><b>'+fmt(p.volume?.h24)+'</b></div>'+
+    '<div class="metric"><small>Perubahan 5m / 1j / 6j / 24j</small><b>'+pct(ch.m5)+' / '+pct(ch.h1)+' / '+pct(ch.h6)+' / '+pct(ch.h24)+'</b></div>';
+  const sc=scorePair(p,sec); const v=verdictFor(sc.total,sec,p);
+  document.getElementById('verdict').innerHTML='<p><span class="pill '+v.cls+'">'+esc(v.label)+'</span> <b>Skor total: '+sc.total+'/100</b></p>';
+  let secHtml='';
+  if(!sec){secHtml='<p class="muted">Data keamanan GoPlus tidak tersedia untuk token ini saat ini. Cek manual di explorer dan jangan anggap aman.</p>';}
+  else{
+    const rows=[];
+    const add=(k,val,good)=>rows.push('<tr><td>'+k+'</td><td>'+(val==null?'-':esc(val))+'</td><td>'+(good==null?'':(good?'<span class="pill ok">OK</span>':'<span class="pill bad">Waspada</span>'))+'</td></tr>');
+    if(sec.is_honeypot!==undefined) add('Honeypot',sec.is_honeypot==='1'?'Ya — tidak bisa jual':'Tidak',sec.is_honeypot==='0');
+    if(sec.is_open_source!==undefined) add('Kontrak terverifikasi / open source',sec.is_open_source==='1'?'Ya':'Tidak',sec.is_open_source==='1');
+    if(sec.is_mintable!==undefined) add('Bisa mint tambahan',sec.is_mintable==='1'?'Ya':'Tidak',sec.is_mintable==='0');
+    if(sec.is_blacklisted!==undefined) add('Blacklist',sec.is_blacklisted==='1'?'Ya':'Tidak',sec.is_blacklisted==='0');
+    if(sec.can_take_back_ownership!==undefined) add('Owner bisa ambil alih / pause',sec.can_take_back_ownership==='1'?'Ya':'Tidak',sec.can_take_back_ownership==='0');
+    if(sec.buy_tax!==undefined) add('Pajak beli',sec.buy_tax,parseFloat(sec.buy_tax||0)<=5);
+    if(sec.sell_tax!==undefined) add('Pajak jual',sec.sell_tax,parseFloat(sec.sell_tax||0)<=5);
+    if(sec.owner_address!==undefined) add('Owner',sec.owner_address||'-',null);
+    if(sec.mint_authority!==undefined) add('Mint authority (Solana)',sec.mint_authority,sec.mint_authority==='0');
+    if(sec.freeze_authority!==undefined) add('Freeze authority (Solana)',sec.freeze_authority,sec.freeze_authority==='0');
+    if(sec.holder_count!==undefined) add('Jumlah holder',fmtNum(sec.holder_count),null);
+    secHtml='<table><tr><th>Pemeriksaan</th><th>Nilai</th><th>Status</th></tr>'+rows.join('')+'</table>';
+  }
+  document.getElementById('security').innerHTML=secHtml;
+  const holders=sec&&sec.holder_count?('Jumlah holder: <b>'+fmtNum(sec.holder_count)+'</b>. '):'';
+  document.getElementById('holders').innerHTML='<p>'+holders+'Top-10 holder <b>tidak tersedia lewat API publik gratis</b> — cek manual di '+(p.chainId==='solana'?'<a href="https://solscan.io/token/'+esc(p.baseToken.address)+'" target="_blank" rel="noopener">Solscan</a>':'<a href="'+explorer(p.chainId==='solana'?'solana':p.chainId,p.baseToken.address)+'" target="_blank" rel="noopener">explorer</a>')+' dan waspadai jika 10 holder teratas menguasai mayoritas pasokan.</p>';
+  document.getElementById('scores').innerHTML=Object.entries(sc.pillars).map(([k,val])=>'<div class="check"><b>'+esc(k)+'</b>: '+val+'/100 <span class="muted">('+(val>=75?'kuat':val>=55?'menengah':'lemah')+')</span></div>').join('');
+  const mom=(ch.h1||0)+(ch.h24||0);
+  document.getElementById('momentum').innerHTML='<p><b>Proksi momentum (bukan RSI/MACD asli):</b> '+(mom>0?'Momentum jangka pendek cenderung naik':'Momentum jangka pendek cenderung melemah')+' — gabungan perubahan 1j ('+pct(ch.h1)+') dan 24j ('+pct(ch.h24)+'). RSI/MACD asli hanya bisa dihitung dari data candle lengkap.</p><p><a href="https://www.tradingview.com/chart/?symbol='+esc(p.baseToken.symbol||'')+'" target="_blank" rel="noopener">Buka chart di TradingView</a> · <a href="'+esc(p.url||'https://dexscreener.com/')+'" target="_blank" rel="noopener">Buka chart di DexScreener</a></p>';
+  const rules=[
+    ['Rule 1 — Kontrak harus lolos', v.cls==='bad'&&sec?'GAGAL: ada sinyal berbahaya di panel keamanan. Jangan beli.':'Lolos dari data yang tersedia — tetap cek audit manual.'],
+    ['Rule 2 — Likuiditas memadai','Likuiditas '+fmt(p.liquidity?.usd)+'. Idealnya LP terkunci 90%+ selama 6–12 bulan — cek lock manual di lock provider.'],
+    ['Rule 3 — Distribusi tidak terpusat','Cek manual top holder di explorer. Waspadai wallet developer/tim tanpa vesting.'],
+    ['Rule 4 — Volume harus sehat','Volume 24j '+fmt(p.volume?.h24)+' vs market cap '+fmt(p.marketCap||p.fdv)+'. Volume harus naik bersama pembeli unik, bukan wash trading.'],
+    ['Rule 5 — Komunitas harus organik','Cek manual X/Telegram/Discord: kritik dijawab atau dihapus, anggota aktif atau bot.'],
+    ['Rule 6 — Entry hanya dengan rencana','Isi formulir Rencana Entry & Exit di bawah sebelum membeli.'],
+    ['Rule 7 — Batasi modal','Hanya dana siap hilang 100%, porsi kecil dari portofolio, wallet terpisah untuk eksperimen.'],
+    ['Rule 8 — Exit plan wajib','Jual 25% saat +50%, 25% lagi saat +100%, keluar penuh jika likuiditas ditarik / whale dump / kontrak berubah.']
+  ];
+  document.getElementById('rules').innerHTML=rules.map(r=>'<div class="check"><b>'+esc(r[0])+'</b><br><span class="muted">'+esc(r[1])+'</span></div>').join('');
+  const items=[
+    ['Alamat kontrak resmi dan terverifikasi',!!sec&&sec.is_open_source==='1','auto'],
+    ['Tidak ada mint unlimited, blacklist, atau pause berbahaya',!!sec&&sec.is_honeypot==='0','auto'],
+    ['Audit valid dan sesuai kontrak',false,'manual'],
+    ['Likuiditas cukup dan tidak mudah ditarik',(p.liquidity?.usd||0)>=100000,'auto'],
+    ['LP terkunci jangka panjang',false,'manual'],
+    ['Holder tidak terlalu terpusat',false,'manual'],
+    ['Volume didukung banyak wallet, bukan wash trading',false,'manual'],
+    ['Market cap/FDV masuk akal terhadap likuiditas',(p.marketCap||p.fdv||0)>0,'auto'],
+    ['Tidak ada unlock besar dalam waktu dekat',false,'manual'],
+    ['Komunitas aktif dan organik',false,'manual'],
+    ['Modal hanya sebagian kecil yang siap hilang',false,'manual'],
+    ['Rencana entry, target, dan exit sudah ditulis',state.watchlist.some(w=>w.token===(p.baseToken?.symbol||'')),'auto']
+  ];
+  document.getElementById('checklist').innerHTML=items.map((it,i)=>'<label class="check"><input type="checkbox" data-check="'+i+'" '+(it[1]?'checked':'')+'> '+esc(it[0])+' — <span class="muted">'+(it[2]==='manual'?'cek manual':'otomatis dari data live')+'</span></label>').join('');
+  document.getElementById('tokenLinks').innerHTML='<p><a href="'+esc(p.url||'https://dexscreener.com/')+'" target="_blank" rel="noopener">DexScreener</a> · <a href="'+explorer(p.chainId,p.baseToken.address)+'" target="_blank" rel="noopener">Explorer</a> · <button class="ghost" id="btnAddWatch">+ Tambah ke Watchlist</button></p>';
+  const b=document.getElementById('btnAddWatch');
+  if(b) b.onclick=()=>{addToWatchlist(p);};
+}
+function addToWatchlist(p){
+  const addr=p.baseToken.address;
+  if(!state.watchlist.some(w=>w.address===addr)){
+    state.watchlist.push({address:addr,symbol:p.baseToken.symbol,name:p.baseToken.name,chain:p.chainId,price:parseFloat(p.priceUsd||0),marketCap:p.marketCap||p.fdv||0,liquidity:p.liquidity?.usd||0,score:scorePair(p,null).total,addedAt:new Date().toISOString()});
+    save(); renderWatchlist(); document.getElementById('planStatus').textContent='Ditambahkan ke watchlist.';
+  }
+}
+function renderWatchlist(){
+  const el=document.getElementById('watchlist');
+  if(!state.watchlist.length){el.innerHTML='<p class="muted">Watchlist masih kosong.</p>'; return;}
+  el.innerHTML=state.watchlist.map((w,i)=>'<div class="token-card"><b>'+esc(w.symbol||'')+'</b> — '+esc(w.name||'')+' <span class="muted">'+esc(w.chain||'')+'</span><br>Harga: '+fmt(w.price)+' · Market cap: '+fmt(w.marketCap)+' · Likuiditas: '+fmt(w.liquidity)+' · Skor: '+(w.score||'-')+'<br><button class="ghost" data-analyze="'+esc(w.address)+'">Analisa</button> <button class="ghost" data-remove="'+i+'">Hapus</button></div>').join('');
+  el.querySelectorAll('[data-analyze]').forEach(b=>b.onclick=()=>analyzeAddress(b.getAttribute('data-analyze')));
+  el.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{state.watchlist.splice(parseInt(b.getAttribute('data-remove')),1); save(); renderWatchlist();});
+}
+function renderChanges(){
+  const el=document.getElementById('monitorChanges');
+  if(!state.changes.length){el.innerHTML='Belum ada perubahan tercatat.'; return;}
+  el.innerHTML=state.changes.slice(-10).reverse().map(c=>'<div class="check"><b>'+esc(c.time||'')+'</b> — '+esc(c.text||'')+'</div>').join('');
+  document.getElementById('monitorNote').textContent=state.note||'Pantauan berjalan.';
+  document.getElementById('monitorTime').textContent=state.lastMonitor?('Terakhir diperbarui: '+new Date(state.lastMonitor).toLocaleString('id-ID')):'Belum ada pantauan.';
+}
+async function analyzeAddress(addr){
+  const st=document.getElementById('searchStatus'); st.textContent='Memuat data live…';
+  try{
+    const p=await fetchPairByToken(addr);
+    const chain=p.chainId||chainOf(addr);
+    const sec=await fetchGoPlus(chain,addr);
+    renderDetail(p,sec); st.textContent='Data live dimuat '+new Date().toLocaleTimeString('id-ID')+'.';
+  }catch(e){ st.textContent='Gagal memuat: '+e.message+'. Coba lagi, atau periksa alamat kontraknya.'; }
+}
+async function analyzeQuery(){
+  const q=document.getElementById('q').value.trim(); if(!q) return;
+  const st=document.getElementById('searchStatus');
+  if(q.length>20){
+    await analyzeAddress(q); return;
+  }
+  st.textContent='Mencari token…';
+  try{
+    const d=await getJSON('https://api.dexscreener.com/latest/dex/search?q='+encodeURIComponent(q));
+    const pairs=(d.pairs||[]).slice(0,8);
+    if(!pairs.length){st.textContent='Tidak ditemukan. Coba alamat kontrak langsung.'; return;}
+    document.getElementById('searchResults').innerHTML=pairs.map(p=>'<div class="token-card" data-addr="'+esc(p.baseToken.address)+'"><b>'+esc(p.baseToken.symbol)+'</b> '+esc(p.baseToken.name)+' · '+esc(p.chainId)+' · '+fmt(parseFloat(p.priceUsd||0))+' · MC '+fmt(p.marketCap||p.fdv)+'</div>').join('');
+    document.querySelectorAll('#searchResults .token-card').forEach(el=>el.onclick=()=>analyzeAddress(el.getAttribute('data-addr')));
+    st.textContent='Pilih salah satu hasil di atas.';
+  }catch(e){st.textContent='Pencarian gagal: '+e.message;}
+}
+async function loadTrending(){
+  const el=document.getElementById('trending'); if(!el) return;
+  try{
+    const [boosts,cg]=await Promise.allSettled([
+      getJSON('https://api.dexscreener.com/token-boosts/top/v1'),
+      getJSON('https://api.coingecko.com/api/v3/search/trending')
+    ]);
+    let html='';
+    if(boosts.status==='fulfilled'&&boosts.value.length){
+      html+='<h3>DEX Screener Boosts</h3>'+boosts.value.slice(0,8).map(b=>'<div class="check"><b>'+esc(b.tokenAddress||'')+'</b> <span class="muted">chain: '+esc(b.chainId||'')+' · amount: '+esc(b.amount||'')+'</span></div>').join('');
+    }
+    if(cg.status==='fulfilled'&&cg.value.coins){
+      html+='<h3>CoinGecko Trending</h3>'+cg.value.coins.slice(0,8).map(c=>'<div class="check"><b>'+esc(c.item.name)+' ('+esc(c.item.symbol)+')</b> <span class="muted">peringkat: '+esc(c.item.market_cap_rank||'-')+'</span></div>').join('');
+    }
+    el.innerHTML=html||'<p class="muted">Trending tidak tersedia saat ini.</p>';
+  }catch(e){el.innerHTML='<p class="muted">Gagal memuat trending: '+esc(e.message)+'</p>';}
+}
+async function loadMigration(){
+  const st=document.getElementById('migrationStatus'); st.textContent='Memuat saran migrasi…';
+  const soon=document.getElementById('migSoon'), nw=document.getElementById('migNew');
+  try{
+    const prof=await getJSON('https://api.dexscreener.com/token-profiles/latest/v1');
+    const sol=(prof||[]).filter(t=>t.chainId==='solana').slice(0,20);
+    if(!sol.length) throw new Error('Tidak ada token Solana terbaru.');
+    const picks=[];
+    for(const t of sol){
+      try{
+        const d=await getJSON('https://api.dexscreener.com/latest/dex/tokens/'+encodeURIComponent(t.tokenAddress));
+        const p=(d.pairs||[]).sort((a,b)=>(b.liquidity?.usd||0)-(a.liquidity?.usd||0))[0];
+        if(p) picks.push(p);
+      }catch(e){}
+      if(picks.length>=14) break;
+    }
+    const now=Date.now();
+    const soonList=[], newList=[];
+    for(const p of picks){
+      const ageH=p.pairCreatedAt? (now-p.pairCreatedAt)/3600000 : 9999;
+      const tx=p.txns?.h1||{buys:0,sells:0}; const tot=(tx.buys||0)+(tx.sells||0);
+      const buyDom=tot? (tx.buys||0)/tot*100 : 50;
+      const vol1=p.volume?.h1||0; const avgTx=tot? vol1/tot : 0;
+      const hype=Math.min(100,Math.round((vol1/10000)+tot/5+Math.abs(p.priceChange?.h1||0)));
+      const whale=Math.min(100,Math.round(buyDom*0.6+Math.min(40,avgTx/100)));
+      const score=Math.round(whale*0.6+hype*0.4);
+      const reason='Dominasi beli 1j '+buyDom.toFixed(0)+'%, rata-rata transaksi '+fmt(avgTx)+', volume 1j '+fmt(vol1)+'.';
+      const item={p,buyDom,avgTx,hype,whale,score,reason,ageH};
+      if(p.dexId==='pumpfun') soonList.push(item); else if(ageH<=14*24) newList.push(item);
+    }
+    soonList.sort((a,b)=>b.score-a.score); newList.sort((a,b)=>b.score-a.score);
+    const card=(it)=>'<div class="token-card" data-addr="'+esc(it.p.address||it.p.baseToken.address)+'"><b>'+esc(it.p.baseToken.symbol)+'</b> '+esc(it.p.baseToken.name)+'<br>Harga '+fmt(parseFloat(it.p.priceUsd||0))+' · MC '+fmt(it.p.marketCap||it.p.fdv)+' · Likuiditas '+fmt(it.p.liquidity?.usd)+'<br>Skor whale: <b>'+it.whale+'/100</b> · Skor hype: <b>'+it.hype+'/100</b> · Skor pick: <b>'+it.score+'/100</b><br><span class="muted">'+esc(it.reason)+' Umur pair: '+Math.round(it.ageH)+' jam.</span><br><span class="muted">Mint/freeze: cek di halaman detail (GoPlus). Holder: cek di Solscan.</span></div>';
+    soon.innerHTML=soonList.length? soonList.slice(0,6).map(card).join('') : '<p class="muted">Tidak ada token menjelang migrasi saat ini.</p>';
+    nw.innerHTML=newList.length? newList.slice(0,6).map(card).join('') : '<p class="muted">Tidak ada token baru migrasi saat ini.</p>';
+    document.querySelectorAll('#migSoon .token-card, #migNew .token-card').forEach(el=>el.onclick=()=>analyzeAddress(el.getAttribute('data-addr')));
+    st.textContent='Diperbarui '+new Date().toLocaleTimeString('id-ID')+'.';
+  }catch(e){st.textContent='Gagal memuat: '+e.message; soon.innerHTML='<p class="muted">Saran migrasi tidak tersedia saat ini.</p>'; nw.innerHTML='';}
+}
+async function refreshMonitor(){
+  const t=document.getElementById('monitorTime'); t.textContent='Memperbarui pantauan…';
+  let changed=0;
+  for(const w of state.watchlist){
+    try{
+      const p=await fetchPairByToken(w.address);
+      const price=parseFloat(p.priceUsd||0); const liq=p.liquidity?.usd||0;
+      const sc=scorePair(p,null).total;
+      const pc=w.price? (price-w.price)/w.price*100 : 0;
+      const liqDrop=w.liquidity? (w.liquidity-liq)/w.liquidity*100 : 0;
+      const notes=[];
+      if(Math.abs(pc)>=15) notes.push('harga bergerak '+pc.toFixed(1)+'% (dari '+fmt(w.price)+' ke '+fmt(price)+')');
+      if(liqDrop>=20) notes.push('likuiditas menyusut '+liqDrop.toFixed(0)+'%');
+      if(Math.abs(sc-(w.score||0))>=10) notes.push('skor berubah dari '+(w.score||'-')+' ke '+sc);
+      if((p.volume?.h1||0)>(w.lastVol1||0)*3 && (w.lastVol1||0)>0) notes.push('volume 1j melonjak');
+      if(notes.length){state.changes.push({time:new Date().toLocaleString('id-ID'),text:w.symbol+': '+notes.join('; ')}); changed++;}
+      w.price=price; w.liquidity=liq; w.score=sc; w.lastVol1=p.volume?.h1||0;
+    }catch(e){}
+  }
+  state.lastMonitor=new Date().toISOString();
+  state.note=changed? changed+' token tercatat berubah berarti sejak pantauan sebelumnya.' : 'Tidak ada perubahan berarti sejak pantauan sebelumnya.';
+  save(); renderWatchlist(); renderChanges();
+}
+document.getElementById('btnSearch').onclick=analyzeQuery;
+document.getElementById('q').addEventListener('keydown',e=>{if(e.key==='Enter') analyzeQuery();});
+document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{document.getElementById('q').value=b.getAttribute('data-q'); analyzeQuery();});
+document.getElementById('btnPlan').onclick=()=>{
+  const token=document.getElementById('planToken').value.trim();
+  if(!token){document.getElementById('planStatus').textContent='Isi dulu token / kontraknya.'; return;}
+  const plan={token,why:document.getElementById('planWhy').value,size:document.getElementById('planSize').value,entry:document.getElementById('planEntry').value,sl:document.getElementById('planSL').value,tp1:document.getElementById('planTP1').value,tp2:document.getElementById('planTP2').value,down:document.getElementById('planDown').value,at:new Date().toISOString()};
+  state.watchlist.push({address:token,symbol:token,name:'Rencana: '+(document.getElementById('planWhy').value||''),chain:'',price:parseFloat(document.getElementById('planEntry').value)||0,marketCap:0,liquidity:0,score:0,plan});
+  save(); renderWatchlist(); document.getElementById('planStatus').textContent='Rencana tersimpan di watchlist.';
+};
+document.getElementById('btnRefreshMonitor').onclick=refreshMonitor;
+document.getElementById('btnMigration').onclick=loadMigration;
+renderWatchlist(); renderChanges(); loadTrending(); loadMigration();
+setInterval(loadTrending,60000); setInterval(loadMigration,60000); setInterval(refreshMonitor,60000);
+</script>
+</body>
+</html>
